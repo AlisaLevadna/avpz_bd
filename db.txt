@@ -5,7 +5,7 @@
 -- Dumped from database version 13.0
 -- Dumped by pg_dump version 13.0
 
--- Started on 2020-10-11 01:47:57
+-- Started on 2020-10-14 22:14:57
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -29,7 +29,34 @@ CREATE SCHEMA avpz;
 ALTER SCHEMA avpz OWNER TO postgres;
 
 --
--- TOC entry 629 (class 1247 OID 16404)
+-- TOC entry 7 (class 2615 OID 16395)
+-- Name: test; Type: SCHEMA; Schema: -; Owner: postgres
+--
+
+CREATE SCHEMA test;
+
+
+ALTER SCHEMA test OWNER TO postgres;
+
+--
+-- TOC entry 2 (class 3079 OID 16384)
+-- Name: adminpack; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS adminpack WITH SCHEMA pg_catalog;
+
+
+--
+-- TOC entry 3015 (class 0 OID 0)
+-- Dependencies: 2
+-- Name: EXTENSION adminpack; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION adminpack IS 'administrative functions for PostgreSQL';
+
+
+--
+-- TOC entry 631 (class 1247 OID 16404)
 -- Name: email; Type: DOMAIN; Schema: avpz; Owner: postgres
 --
 
@@ -40,7 +67,25 @@ CREATE DOMAIN avpz.email AS text
 ALTER DOMAIN avpz.email OWNER TO postgres;
 
 --
--- TOC entry 216 (class 1255 OID 16437)
+-- TOC entry 206 (class 1255 OID 16458)
+-- Name: find_bird_by_name(text); Type: FUNCTION; Schema: avpz; Owner: postgres
+--
+
+CREATE FUNCTION avpz.find_bird_by_name(bird text) RETURNS SETOF record
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+RETURN QUERY
+SELECT * FROM avpz.birds
+WHERE bird_name ILIKE concat('%', bird, '%');
+END
+$$;
+
+
+ALTER FUNCTION avpz.find_bird_by_name(bird text) OWNER TO postgres;
+
+--
+-- TOC entry 218 (class 1255 OID 16437)
 -- Name: login_user(text, bytea); Type: FUNCTION; Schema: avpz; Owner: postgres
 --
 
@@ -75,7 +120,7 @@ $$;
 ALTER FUNCTION avpz.login_user(email text, user_password_ bytea) OWNER TO postgres;
 
 --
--- TOC entry 217 (class 1255 OID 16436)
+-- TOC entry 219 (class 1255 OID 16436)
 -- Name: registrer_user(avpz.email, bytea, text, text, text, date, text); Type: FUNCTION; Schema: avpz; Owner: postgres
 --
 
@@ -109,21 +154,36 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- TOC entry 204 (class 1259 OID 16414)
--- Name: FoundBirds; Type: TABLE; Schema: avpz; Owner: postgres
+-- TOC entry 205 (class 1259 OID 16438)
+-- Name: birds; Type: TABLE; Schema: avpz; Owner: postgres
 --
 
-CREATE TABLE avpz."FoundBirds" (
+CREATE TABLE avpz.birds (
+    bird_name text NOT NULL,
+    photo bytea,
+    description text
+);
+
+
+ALTER TABLE avpz.birds OWNER TO postgres;
+
+--
+-- TOC entry 204 (class 1259 OID 16414)
+-- Name: foundbirds; Type: TABLE; Schema: avpz; Owner: postgres
+--
+
+CREATE TABLE avpz.foundbirds (
     found_bird_id uuid NOT NULL,
     found_point point NOT NULL,
     found_time timestamp with time zone NOT NULL,
     finder_email avpz.email NOT NULL,
     photo bytea,
-    sound bytea
+    sound bytea,
+    bird_name text NOT NULL
 );
 
 
-ALTER TABLE avpz."FoundBirds" OWNER TO postgres;
+ALTER TABLE avpz.foundbirds OWNER TO postgres;
 
 --
 -- TOC entry 203 (class 1259 OID 16406)
@@ -144,16 +204,16 @@ CREATE TABLE avpz.users (
 ALTER TABLE avpz.users OWNER TO postgres;
 
 --
--- TOC entry 2866 (class 2606 OID 16421)
--- Name: FoundBirds FounBirds_pkey; Type: CONSTRAINT; Schema: avpz; Owner: postgres
+-- TOC entry 2872 (class 2606 OID 16421)
+-- Name: foundbirds FounBirds_pkey; Type: CONSTRAINT; Schema: avpz; Owner: postgres
 --
 
-ALTER TABLE ONLY avpz."FoundBirds"
+ALTER TABLE ONLY avpz.foundbirds
     ADD CONSTRAINT "FounBirds_pkey" PRIMARY KEY (found_bird_id);
 
 
 --
--- TOC entry 2864 (class 2606 OID 16413)
+-- TOC entry 2870 (class 2606 OID 16413)
 -- Name: users Users_pkey; Type: CONSTRAINT; Schema: avpz; Owner: postgres
 --
 
@@ -161,7 +221,34 @@ ALTER TABLE ONLY avpz.users
     ADD CONSTRAINT "Users_pkey" PRIMARY KEY (user_email);
 
 
--- Completed on 2020-10-11 01:47:58
+--
+-- TOC entry 2874 (class 2606 OID 16445)
+-- Name: birds birds_pkey; Type: CONSTRAINT; Schema: avpz; Owner: postgres
+--
+
+ALTER TABLE ONLY avpz.birds
+    ADD CONSTRAINT birds_pkey PRIMARY KEY (bird_name);
+
+
+--
+-- TOC entry 2876 (class 2606 OID 16451)
+-- Name: foundbirds bird; Type: FK CONSTRAINT; Schema: avpz; Owner: postgres
+--
+
+ALTER TABLE ONLY avpz.foundbirds
+    ADD CONSTRAINT bird FOREIGN KEY (bird_name) REFERENCES avpz.birds(bird_name) ON UPDATE CASCADE ON DELETE CASCADE NOT VALID;
+
+
+--
+-- TOC entry 2875 (class 2606 OID 16446)
+-- Name: foundbirds user; Type: FK CONSTRAINT; Schema: avpz; Owner: postgres
+--
+
+ALTER TABLE ONLY avpz.foundbirds
+    ADD CONSTRAINT "user" FOREIGN KEY (finder_email) REFERENCES avpz.users(user_email) ON UPDATE CASCADE ON DELETE CASCADE NOT VALID;
+
+
+-- Completed on 2020-10-14 22:14:58
 
 --
 -- PostgreSQL database dump complete
