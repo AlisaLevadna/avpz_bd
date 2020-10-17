@@ -5,7 +5,7 @@
 -- Dumped from database version 13.0
 -- Dumped by pg_dump version 13.0
 
--- Started on 2020-10-14 22:14:57
+-- Started on 2020-10-17 23:07:46
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -19,7 +19,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- TOC entry 8 (class 2615 OID 16396)
+-- TOC entry 9 (class 2615 OID 16396)
 -- Name: avpz; Type: SCHEMA; Schema: -; Owner: postgres
 --
 
@@ -29,7 +29,7 @@ CREATE SCHEMA avpz;
 ALTER SCHEMA avpz OWNER TO postgres;
 
 --
--- TOC entry 7 (class 2615 OID 16395)
+-- TOC entry 8 (class 2615 OID 16395)
 -- Name: test; Type: SCHEMA; Schema: -; Owner: postgres
 --
 
@@ -47,7 +47,7 @@ CREATE EXTENSION IF NOT EXISTS adminpack WITH SCHEMA pg_catalog;
 
 
 --
--- TOC entry 3015 (class 0 OID 0)
+-- TOC entry 3027 (class 0 OID 0)
 -- Dependencies: 2
 -- Name: EXTENSION adminpack; Type: COMMENT; Schema: -; Owner: 
 --
@@ -56,7 +56,24 @@ COMMENT ON EXTENSION adminpack IS 'administrative functions for PostgreSQL';
 
 
 --
--- TOC entry 631 (class 1247 OID 16404)
+-- TOC entry 3 (class 3079 OID 16464)
+-- Name: uuid-ossp; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
+
+
+--
+-- TOC entry 3028 (class 0 OID 0)
+-- Dependencies: 3
+-- Name: EXTENSION "uuid-ossp"; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UUIDs)';
+
+
+--
+-- TOC entry 643 (class 1247 OID 16404)
 -- Name: email; Type: DOMAIN; Schema: avpz; Owner: postgres
 --
 
@@ -67,7 +84,26 @@ CREATE DOMAIN avpz.email AS text
 ALTER DOMAIN avpz.email OWNER TO postgres;
 
 --
--- TOC entry 206 (class 1255 OID 16458)
+-- TOC entry 231 (class 1255 OID 16463)
+-- Name: add_found_bird(double precision, double precision, timestamp with time zone, avpz.email, bytea, bytea, text); Type: PROCEDURE; Schema: avpz; Owner: postgres
+--
+
+CREATE PROCEDURE avpz.add_found_bird(longitude double precision, latitude double precision, time_ timestamp with time zone, email_ avpz.email, photo_ bytea, sound_ bytea, name_ text)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+	INSERT INTO avpz.foundbirds 
+	(found_bird_id, found_point, found_time, finder_email, photo, sound, bird_name)
+	VALUES 
+	(uuid_generate_v4(), point(longitude, latitude), time_, email_, photo_, sound_, name_);
+END
+$$;
+
+
+ALTER PROCEDURE avpz.add_found_bird(longitude double precision, latitude double precision, time_ timestamp with time zone, email_ avpz.email, photo_ bytea, sound_ bytea, name_ text) OWNER TO postgres;
+
+--
+-- TOC entry 207 (class 1255 OID 16458)
 -- Name: find_bird_by_name(text); Type: FUNCTION; Schema: avpz; Owner: postgres
 --
 
@@ -85,7 +121,7 @@ $$;
 ALTER FUNCTION avpz.find_bird_by_name(bird text) OWNER TO postgres;
 
 --
--- TOC entry 218 (class 1255 OID 16437)
+-- TOC entry 219 (class 1255 OID 16437)
 -- Name: login_user(text, bytea); Type: FUNCTION; Schema: avpz; Owner: postgres
 --
 
@@ -120,7 +156,7 @@ $$;
 ALTER FUNCTION avpz.login_user(email text, user_password_ bytea) OWNER TO postgres;
 
 --
--- TOC entry 219 (class 1255 OID 16436)
+-- TOC entry 220 (class 1255 OID 16436)
 -- Name: registrer_user(avpz.email, bytea, text, text, text, date, text); Type: FUNCTION; Schema: avpz; Owner: postgres
 --
 
@@ -154,7 +190,7 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- TOC entry 205 (class 1259 OID 16438)
+-- TOC entry 206 (class 1259 OID 16438)
 -- Name: birds; Type: TABLE; Schema: avpz; Owner: postgres
 --
 
@@ -168,7 +204,7 @@ CREATE TABLE avpz.birds (
 ALTER TABLE avpz.birds OWNER TO postgres;
 
 --
--- TOC entry 204 (class 1259 OID 16414)
+-- TOC entry 205 (class 1259 OID 16414)
 -- Name: foundbirds; Type: TABLE; Schema: avpz; Owner: postgres
 --
 
@@ -186,7 +222,7 @@ CREATE TABLE avpz.foundbirds (
 ALTER TABLE avpz.foundbirds OWNER TO postgres;
 
 --
--- TOC entry 203 (class 1259 OID 16406)
+-- TOC entry 204 (class 1259 OID 16406)
 -- Name: users; Type: TABLE; Schema: avpz; Owner: postgres
 --
 
@@ -204,7 +240,7 @@ CREATE TABLE avpz.users (
 ALTER TABLE avpz.users OWNER TO postgres;
 
 --
--- TOC entry 2872 (class 2606 OID 16421)
+-- TOC entry 2884 (class 2606 OID 16421)
 -- Name: foundbirds FounBirds_pkey; Type: CONSTRAINT; Schema: avpz; Owner: postgres
 --
 
@@ -213,7 +249,7 @@ ALTER TABLE ONLY avpz.foundbirds
 
 
 --
--- TOC entry 2870 (class 2606 OID 16413)
+-- TOC entry 2882 (class 2606 OID 16413)
 -- Name: users Users_pkey; Type: CONSTRAINT; Schema: avpz; Owner: postgres
 --
 
@@ -222,7 +258,7 @@ ALTER TABLE ONLY avpz.users
 
 
 --
--- TOC entry 2874 (class 2606 OID 16445)
+-- TOC entry 2886 (class 2606 OID 16445)
 -- Name: birds birds_pkey; Type: CONSTRAINT; Schema: avpz; Owner: postgres
 --
 
@@ -231,7 +267,7 @@ ALTER TABLE ONLY avpz.birds
 
 
 --
--- TOC entry 2876 (class 2606 OID 16451)
+-- TOC entry 2888 (class 2606 OID 16451)
 -- Name: foundbirds bird; Type: FK CONSTRAINT; Schema: avpz; Owner: postgres
 --
 
@@ -240,7 +276,7 @@ ALTER TABLE ONLY avpz.foundbirds
 
 
 --
--- TOC entry 2875 (class 2606 OID 16446)
+-- TOC entry 2887 (class 2606 OID 16446)
 -- Name: foundbirds user; Type: FK CONSTRAINT; Schema: avpz; Owner: postgres
 --
 
@@ -248,7 +284,7 @@ ALTER TABLE ONLY avpz.foundbirds
     ADD CONSTRAINT "user" FOREIGN KEY (finder_email) REFERENCES avpz.users(user_email) ON UPDATE CASCADE ON DELETE CASCADE NOT VALID;
 
 
--- Completed on 2020-10-14 22:14:58
+-- Completed on 2020-10-17 23:07:47
 
 --
 -- PostgreSQL database dump complete
